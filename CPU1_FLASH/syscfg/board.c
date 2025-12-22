@@ -48,8 +48,11 @@ void Board_init()
 	EALLOW;
 
 	PinMux_init();
+	SYSCTL_init();
+	SYNC_init();
 	CLA_init();
 	MEMCFG_init();
+	EPWM_init();
 
 	EDIS;
 }
@@ -65,6 +68,39 @@ void PinMux_init()
 	// PinMux for modules assigned to CPU1
 	//
 	
+	//
+	// EPWM1 -> PFC_A Pinmux
+	//
+	GPIO_setPinConfig(PFC_A_EPWMA_PIN_CONFIG);
+	GPIO_setPadConfig(PFC_A_EPWMA_GPIO, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(PFC_A_EPWMA_GPIO, GPIO_QUAL_SYNC);
+
+	GPIO_setPinConfig(PFC_A_EPWMB_PIN_CONFIG);
+	GPIO_setPadConfig(PFC_A_EPWMB_GPIO, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(PFC_A_EPWMB_GPIO, GPIO_QUAL_SYNC);
+
+	//
+	// EPWM2 -> PFC_B Pinmux
+	//
+	GPIO_setPinConfig(PFC_B_EPWMA_PIN_CONFIG);
+	GPIO_setPadConfig(PFC_B_EPWMA_GPIO, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(PFC_B_EPWMA_GPIO, GPIO_QUAL_SYNC);
+
+	GPIO_setPinConfig(PFC_B_EPWMB_PIN_CONFIG);
+	GPIO_setPadConfig(PFC_B_EPWMB_GPIO, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(PFC_B_EPWMB_GPIO, GPIO_QUAL_SYNC);
+
+	//
+	// EPWM3 -> PFC_C Pinmux
+	//
+	GPIO_setPinConfig(PFC_C_EPWMA_PIN_CONFIG);
+	GPIO_setPadConfig(PFC_C_EPWMA_GPIO, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(PFC_C_EPWMA_GPIO, GPIO_QUAL_SYNC);
+
+	GPIO_setPinConfig(PFC_C_EPWMB_PIN_CONFIG);
+	GPIO_setPadConfig(PFC_C_EPWMB_GPIO, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(PFC_C_EPWMB_GPIO, GPIO_QUAL_SYNC);
+
 
 }
 
@@ -163,6 +199,134 @@ void CLA_init()
 
 //*****************************************************************************
 //
+// EPWM Configurations
+//
+//*****************************************************************************
+void EPWM_init(){
+    EPWM_setClockPrescaler(PFC_A_BASE, EPWM_CLOCK_DIVIDER_1, EPWM_HSCLOCK_DIVIDER_1);	
+    EPWM_setTimeBasePeriod(PFC_A_BASE, 3125);	
+    EPWM_setTimeBaseCounter(PFC_A_BASE, 0);	
+    EPWM_setTimeBaseCounterMode(PFC_A_BASE, EPWM_COUNTER_MODE_UP_DOWN);	
+    EPWM_disablePhaseShiftLoad(PFC_A_BASE);	
+    EPWM_setPhaseShift(PFC_A_BASE, 0);	
+    EPWM_forceSyncPulse(PFC_A_BASE);	
+    EPWM_setSyncOutPulseMode(PFC_A_BASE, EPWM_SYNC_OUT_PULSE_ON_COUNTER_ZERO);	
+    EPWM_setCounterCompareValue(PFC_A_BASE, EPWM_COUNTER_COMPARE_A, 1470);	
+    EPWM_enableGlobalLoadRegisters(PFC_A_BASE, EPWM_GL_REGISTER_CMPA_CMPAHR);	
+    EPWM_setCounterCompareShadowLoadMode(PFC_A_BASE, EPWM_COUNTER_COMPARE_A, EPWM_COMP_LOAD_ON_CNTR_ZERO);	
+    EPWM_setupEPWMLinks(PFC_A_BASE, EPWM_LINK_WITH_EPWM_1, EPWM_LINK_COMP_A);	
+    EPWM_setCounterCompareValue(PFC_A_BASE, EPWM_COUNTER_COMPARE_B, 0);	
+    EPWM_setCounterCompareShadowLoadMode(PFC_A_BASE, EPWM_COUNTER_COMPARE_B, EPWM_COMP_LOAD_ON_CNTR_ZERO);	
+    EPWM_disableActionQualifierShadowLoadMode(PFC_A_BASE, EPWM_ACTION_QUALIFIER_A);	
+    EPWM_setActionQualifierShadowLoadMode(PFC_A_BASE, EPWM_ACTION_QUALIFIER_A, EPWM_AQ_LOAD_ON_CNTR_ZERO);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_ZERO);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_PERIOD);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_LOW, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_HIGH, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPB);	
+    EPWM_disableActionQualifierShadowLoadMode(PFC_A_BASE, EPWM_ACTION_QUALIFIER_B);	
+    EPWM_setActionQualifierShadowLoadMode(PFC_A_BASE, EPWM_ACTION_QUALIFIER_B, EPWM_AQ_LOAD_ON_CNTR_ZERO);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_ZERO);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_PERIOD);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB);	
+    EPWM_setActionQualifierAction(PFC_A_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPB);	
+    EPWM_setDeadBandDelayPolarity(PFC_A_BASE, EPWM_DB_FED, EPWM_DB_POLARITY_ACTIVE_LOW);	
+    EPWM_setDeadBandDelayMode(PFC_A_BASE, EPWM_DB_RED, true);	
+    EPWM_setRisingEdgeDelayCountShadowLoadMode(PFC_A_BASE, EPWM_RED_LOAD_ON_CNTR_ZERO);	
+    EPWM_setRisingEdgeDelayCount(PFC_A_BASE, 150);	
+    EPWM_setDeadBandDelayMode(PFC_A_BASE, EPWM_DB_FED, true);	
+    EPWM_setFallingEdgeDelayCountShadowLoadMode(PFC_A_BASE, EPWM_FED_LOAD_ON_CNTR_ZERO);	
+    EPWM_setFallingEdgeDelayCount(PFC_A_BASE, 150);	
+    EPWM_enableGlobalLoadRegisters(PFC_A_BASE, EPWM_GL_REGISTER_DBCTL);	
+    EPWM_enableGlobalLoadRegisters(PFC_A_BASE, EPWM_GL_REGISTER_DBRED_DBREDHR);	
+    EPWM_enableGlobalLoadRegisters(PFC_A_BASE, EPWM_GL_REGISTER_DBFED_DBFEDHR);	
+    EPWM_setClockPrescaler(PFC_B_BASE, EPWM_CLOCK_DIVIDER_1, EPWM_HSCLOCK_DIVIDER_1);	
+    EPWM_setTimeBasePeriod(PFC_B_BASE, 3125);	
+    EPWM_setTimeBaseCounter(PFC_B_BASE, 0);	
+    EPWM_setTimeBaseCounterMode(PFC_B_BASE, EPWM_COUNTER_MODE_UP_DOWN);	
+    EPWM_setCountModeAfterSync(PFC_B_BASE, EPWM_COUNT_MODE_UP_AFTER_SYNC);	
+    EPWM_enablePhaseShiftLoad(PFC_B_BASE);	
+    EPWM_setPhaseShift(PFC_B_BASE, 0);	
+    EPWM_setSyncOutPulseMode(PFC_B_BASE, EPWM_SYNC_OUT_PULSE_ON_EPWMxSYNCIN);	
+    EPWM_setCounterCompareValue(PFC_B_BASE, EPWM_COUNTER_COMPARE_A, 1470);	
+    EPWM_enableGlobalLoadRegisters(PFC_B_BASE, EPWM_GL_REGISTER_CMPA_CMPAHR);	
+    EPWM_setCounterCompareShadowLoadMode(PFC_B_BASE, EPWM_COUNTER_COMPARE_A, EPWM_COMP_LOAD_ON_CNTR_ZERO);	
+    EPWM_setupEPWMLinks(PFC_B_BASE, EPWM_LINK_WITH_EPWM_1, EPWM_LINK_COMP_A);	
+    EPWM_setCounterCompareValue(PFC_B_BASE, EPWM_COUNTER_COMPARE_B, 0);	
+    EPWM_setCounterCompareShadowLoadMode(PFC_B_BASE, EPWM_COUNTER_COMPARE_B, EPWM_COMP_LOAD_ON_CNTR_ZERO);	
+    EPWM_disableActionQualifierShadowLoadMode(PFC_B_BASE, EPWM_ACTION_QUALIFIER_A);	
+    EPWM_setActionQualifierShadowLoadMode(PFC_B_BASE, EPWM_ACTION_QUALIFIER_A, EPWM_AQ_LOAD_ON_CNTR_ZERO);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_ZERO);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_PERIOD);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_LOW, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_HIGH, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPB);	
+    EPWM_disableActionQualifierShadowLoadMode(PFC_B_BASE, EPWM_ACTION_QUALIFIER_B);	
+    EPWM_setActionQualifierShadowLoadMode(PFC_B_BASE, EPWM_ACTION_QUALIFIER_B, EPWM_AQ_LOAD_ON_CNTR_ZERO);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_ZERO);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_PERIOD);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB);	
+    EPWM_setActionQualifierAction(PFC_B_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPB);	
+    EPWM_setDeadBandDelayPolarity(PFC_B_BASE, EPWM_DB_FED, EPWM_DB_POLARITY_ACTIVE_LOW);	
+    EPWM_setDeadBandDelayMode(PFC_B_BASE, EPWM_DB_RED, true);	
+    EPWM_setRisingEdgeDelayCountShadowLoadMode(PFC_B_BASE, EPWM_RED_LOAD_ON_CNTR_ZERO);	
+    EPWM_setRisingEdgeDelayCount(PFC_B_BASE, 150);	
+    EPWM_setDeadBandDelayMode(PFC_B_BASE, EPWM_DB_FED, true);	
+    EPWM_setFallingEdgeDelayCountShadowLoadMode(PFC_B_BASE, EPWM_FED_LOAD_ON_CNTR_ZERO);	
+    EPWM_setFallingEdgeDelayCount(PFC_B_BASE, 150);	
+    EPWM_enableGlobalLoadRegisters(PFC_B_BASE, EPWM_GL_REGISTER_DBCTL);	
+    EPWM_enableGlobalLoadRegisters(PFC_B_BASE, EPWM_GL_REGISTER_DBRED_DBREDHR);	
+    EPWM_enableGlobalLoadRegisters(PFC_B_BASE, EPWM_GL_REGISTER_DBFED_DBFEDHR);	
+    EPWM_setClockPrescaler(PFC_C_BASE, EPWM_CLOCK_DIVIDER_1, EPWM_HSCLOCK_DIVIDER_1);	
+    EPWM_setTimeBasePeriod(PFC_C_BASE, 3125);	
+    EPWM_setTimeBaseCounter(PFC_C_BASE, 0);	
+    EPWM_setTimeBaseCounterMode(PFC_C_BASE, EPWM_COUNTER_MODE_UP_DOWN);	
+    EPWM_setCountModeAfterSync(PFC_C_BASE, EPWM_COUNT_MODE_UP_AFTER_SYNC);	
+    EPWM_enablePhaseShiftLoad(PFC_C_BASE);	
+    EPWM_setPhaseShift(PFC_C_BASE, 0);	
+    EPWM_setSyncOutPulseMode(PFC_C_BASE, EPWM_SYNC_OUT_PULSE_ON_EPWMxSYNCIN);	
+    EPWM_setCounterCompareValue(PFC_C_BASE, EPWM_COUNTER_COMPARE_A, 1470);	
+    EPWM_enableGlobalLoadRegisters(PFC_C_BASE, EPWM_GL_REGISTER_CMPA_CMPAHR);	
+    EPWM_setCounterCompareShadowLoadMode(PFC_C_BASE, EPWM_COUNTER_COMPARE_A, EPWM_COMP_LOAD_ON_CNTR_ZERO);	
+    EPWM_setupEPWMLinks(PFC_C_BASE, EPWM_LINK_WITH_EPWM_1, EPWM_LINK_COMP_A);	
+    EPWM_setCounterCompareValue(PFC_C_BASE, EPWM_COUNTER_COMPARE_B, 0);	
+    EPWM_setCounterCompareShadowLoadMode(PFC_C_BASE, EPWM_COUNTER_COMPARE_B, EPWM_COMP_LOAD_ON_CNTR_ZERO);	
+    EPWM_disableActionQualifierShadowLoadMode(PFC_C_BASE, EPWM_ACTION_QUALIFIER_A);	
+    EPWM_setActionQualifierShadowLoadMode(PFC_C_BASE, EPWM_ACTION_QUALIFIER_A, EPWM_AQ_LOAD_ON_CNTR_ZERO);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_ZERO);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_PERIOD);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_LOW, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_HIGH, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_A, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPB);	
+    EPWM_disableActionQualifierShadowLoadMode(PFC_C_BASE, EPWM_ACTION_QUALIFIER_B);	
+    EPWM_setActionQualifierShadowLoadMode(PFC_C_BASE, EPWM_ACTION_QUALIFIER_B, EPWM_AQ_LOAD_ON_CNTR_ZERO);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_ZERO);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_PERIOD);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPA);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPA);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_UP_CMPB);	
+    EPWM_setActionQualifierAction(PFC_C_BASE, EPWM_AQ_OUTPUT_B, EPWM_AQ_OUTPUT_NO_CHANGE, EPWM_AQ_OUTPUT_ON_TIMEBASE_DOWN_CMPB);	
+    EPWM_setDeadBandDelayPolarity(PFC_C_BASE, EPWM_DB_FED, EPWM_DB_POLARITY_ACTIVE_LOW);	
+    EPWM_setDeadBandDelayMode(PFC_C_BASE, EPWM_DB_RED, true);	
+    EPWM_setRisingEdgeDelayCountShadowLoadMode(PFC_C_BASE, EPWM_RED_LOAD_ON_CNTR_ZERO);	
+    EPWM_setRisingEdgeDelayCount(PFC_C_BASE, 150);	
+    EPWM_setDeadBandDelayMode(PFC_C_BASE, EPWM_DB_FED, true);	
+    EPWM_setFallingEdgeDelayCountShadowLoadMode(PFC_C_BASE, EPWM_FED_LOAD_ON_CNTR_ZERO);	
+    EPWM_setFallingEdgeDelayCount(PFC_C_BASE, 150);	
+    EPWM_enableGlobalLoadRegisters(PFC_C_BASE, EPWM_GL_REGISTER_DBCTL);	
+    EPWM_enableGlobalLoadRegisters(PFC_C_BASE, EPWM_GL_REGISTER_DBRED_DBREDHR);	
+    EPWM_enableGlobalLoadRegisters(PFC_C_BASE, EPWM_GL_REGISTER_DBFED_DBFEDHR);	
+}
+
+//*****************************************************************************
+//
 // MEMCFG Configurations
 //
 //*****************************************************************************
@@ -219,3 +383,396 @@ void MEMCFG_init(){
 	MemCfg_setCorrErrorThreshold(0);
 	MemCfg_disableCorrErrorInterrupt(MEMCFG_CERR_CPUREAD);
 }        
+//*****************************************************************************
+//
+// SYNC Scheme Configurations
+//
+//*****************************************************************************
+void SYNC_init(){
+	SysCtl_setSyncOutputConfig(SYSCTL_SYNC_OUT_SRC_EPWM1SYNCOUT);
+	//
+	// For EPWM1, the sync input is: SYSCTL_SYNC_IN_SRC_EXTSYNCIN1
+	//
+	SysCtl_setSyncInputConfig(SYSCTL_SYNC_IN_EPWM4, SYSCTL_SYNC_IN_SRC_EPWM1SYNCOUT);
+	SysCtl_setSyncInputConfig(SYSCTL_SYNC_IN_EPWM7, SYSCTL_SYNC_IN_SRC_EPWM1SYNCOUT);
+	SysCtl_setSyncInputConfig(SYSCTL_SYNC_IN_ECAP1, SYSCTL_SYNC_IN_SRC_EPWM1SYNCOUT);
+	SysCtl_setSyncInputConfig(SYSCTL_SYNC_IN_ECAP4, SYSCTL_SYNC_IN_SRC_EPWM1SYNCOUT);
+	SysCtl_setSyncInputConfig(SYSCTL_SYNC_IN_ECAP6, SYSCTL_SYNC_IN_SRC_EPWM1SYNCOUT);
+	//
+	// SOCA
+	//
+	SysCtl_enableExtADCSOCSource(0);
+	//
+	// SOCB
+	//
+	SysCtl_enableExtADCSOCSource(0);
+}
+//*****************************************************************************
+//
+// SYSCTL Configurations
+//
+//*****************************************************************************
+void SYSCTL_init(){
+	//
+    // sysctl initialization
+	//
+
+    SysCtl_disableMCD();
+
+
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ADCA, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ADCA, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ADCA, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ADCB, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ADCB, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ADCB, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ADCC, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ADCC, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ADCC, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS1, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS1, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS1, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS2, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS2, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS2, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS3, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS3, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS3, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS4, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS4, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS4, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS5, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS5, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS5, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS6, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS6, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS6, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS7, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS7, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CMPSS7, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_DACA, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_DACA, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_DACA, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_DACB, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_DACB, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_DACB, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA1, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA1, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA1, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA2, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA2, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA2, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA3, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA3, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA3, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA4, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA4, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA4, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA5, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA5, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA5, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA6, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA6, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA6, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA7, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA7, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PGA7, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM1, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM1, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM1, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM2, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM2, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM2, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM3, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM3, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM3, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM4, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM4, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM4, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM5, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM5, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM5, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM6, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM6, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM6, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM7, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM7, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM7, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM8, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM8, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EPWM8, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EQEP1, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EQEP1, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EQEP1, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EQEP2, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EQEP2, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_EQEP2, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP1, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP1, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP1, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP2, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP2, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP2, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP3, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP3, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP3, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP4, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP4, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP4, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP5, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP5, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP5, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP6, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP6, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP6, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP7, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP7, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_ECAP7, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_SDFM1, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_SDFM1, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_SDFM1, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CLB1, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CLB1, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CLB2, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CLB2, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CLB3, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CLB3, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CLB4, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CLB4, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CLA1PROMCRC, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CLA1PROMCRC, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_SPIA, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_SPIA, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_SPIA, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_SPIB, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_SPIB, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_SPIB, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PMBUSA, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PMBUSA, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_PMBUSA, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_LINA, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_LINA, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_LINA, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CANA, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CANA, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CANB, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_CANB, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_FSIATX, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_FSIATX, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_FSIATX, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_FSIARX, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_FSIARX, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_FSIARX, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_HRPWMA, 
+        SYSCTL_ACCESS_CPU1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_HRPWMA, 
+        SYSCTL_ACCESS_CLA1, SYSCTL_ACCESS_FULL);
+    SysCtl_setPeripheralAccessControl(SYSCTL_ACCESS_HRPWMA, 
+        SYSCTL_ACCESS_DMA1, SYSCTL_ACCESS_FULL);
+
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CLA1);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_DMA);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_TIMER0);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_TIMER1);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_TIMER2);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_HRPWM);
+    SysCtl_disablePeripheral(SYSCTL_PERIPH_CLK_TBCLKSYNC);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM1);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM2);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM3);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM4);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM5);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM6);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM7);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EPWM8);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_ECAP1);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_ECAP2);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_ECAP3);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_ECAP4);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_ECAP5);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_ECAP6);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_ECAP7);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EQEP1);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_EQEP2);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_SD1);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_SCIA);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_SCIB);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_SPIA);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_SPIB);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_I2CA);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CANA);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CANB);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_ADCA);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_ADCB);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_ADCC);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CMPSS1);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CMPSS2);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CMPSS3);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CMPSS4);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CMPSS5);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CMPSS6);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CMPSS7);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_PGA1);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_PGA2);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_PGA3);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_PGA4);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_PGA5);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_PGA6);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_PGA7);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_DACA);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_DACB);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CLB1);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CLB2);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CLB3);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_CLB4);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_FSITXA);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_FSIRXA);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_LINA);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_PMBUSA);
+    SysCtl_enablePeripheral(SYSCTL_PERIPH_CLK_DCC0);
+
+}
+

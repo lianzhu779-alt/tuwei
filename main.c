@@ -64,7 +64,7 @@
 //
 // Included Files
 //
-#include <cla_ex4_pwm_control_shared.h>
+#include <cla_shared.h>
 #include "driverlib.h"
 #include "device.h"
 #include "board.h"

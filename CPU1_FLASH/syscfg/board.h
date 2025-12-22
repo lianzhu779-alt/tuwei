@@ -58,6 +58,54 @@ extern "C"
 //
 //*****************************************************************************
 
+//
+// EPWM1 -> PFC_A Pinmux
+//
+//
+// EPWM1_A - GPIO Settings
+//
+#define GPIO_PIN_EPWM1_A 0
+#define PFC_A_EPWMA_GPIO 0
+#define PFC_A_EPWMA_PIN_CONFIG GPIO_0_EPWM1_A
+//
+// EPWM1_B - GPIO Settings
+//
+#define GPIO_PIN_EPWM1_B 1
+#define PFC_A_EPWMB_GPIO 1
+#define PFC_A_EPWMB_PIN_CONFIG GPIO_1_EPWM1_B
+
+//
+// EPWM2 -> PFC_B Pinmux
+//
+//
+// EPWM2_A - GPIO Settings
+//
+#define GPIO_PIN_EPWM2_A 2
+#define PFC_B_EPWMA_GPIO 2
+#define PFC_B_EPWMA_PIN_CONFIG GPIO_2_EPWM2_A
+//
+// EPWM2_B - GPIO Settings
+//
+#define GPIO_PIN_EPWM2_B 3
+#define PFC_B_EPWMB_GPIO 3
+#define PFC_B_EPWMB_PIN_CONFIG GPIO_3_EPWM2_B
+
+//
+// EPWM3 -> PFC_C Pinmux
+//
+//
+// EPWM3_A - GPIO Settings
+//
+#define GPIO_PIN_EPWM3_A 4
+#define PFC_C_EPWMA_GPIO 4
+#define PFC_C_EPWMA_PIN_CONFIG GPIO_4_EPWM3_A
+//
+// EPWM3_B - GPIO Settings
+//
+#define GPIO_PIN_EPWM3_B 5
+#define PFC_C_EPWMB_GPIO 5
+#define PFC_C_EPWMB_PIN_CONFIG GPIO_5_EPWM3_B
+
 //*****************************************************************************
 //
 // CLA Configurations
@@ -83,7 +131,64 @@ void myCLA0_init();
 
 //*****************************************************************************
 //
+// EPWM Configurations
+//
+//*****************************************************************************
+#define PFC_A_BASE EPWM1_BASE
+#define PFC_A_TBPRD 3125
+#define PFC_A_COUNTER_MODE EPWM_COUNTER_MODE_UP_DOWN
+#define PFC_A_TBPHS 0
+#define PFC_A_CMPA 1470
+#define PFC_A_CMPB 0
+#define PFC_A_CMPC 0
+#define PFC_A_CMPD 0
+#define PFC_A_DBRED 150
+#define PFC_A_DBFED 150
+#define PFC_A_TZA_ACTION EPWM_TZ_ACTION_HIGH_Z
+#define PFC_A_TZB_ACTION EPWM_TZ_ACTION_HIGH_Z
+#define PFC_A_INTERRUPT_SOURCE EPWM_INT_TBCTR_DISABLED
+#define PFC_B_BASE EPWM2_BASE
+#define PFC_B_TBPRD 3125
+#define PFC_B_COUNTER_MODE EPWM_COUNTER_MODE_UP_DOWN
+#define PFC_B_TBPHS 0
+#define PFC_B_CMPA 1470
+#define PFC_B_CMPB 0
+#define PFC_B_CMPC 0
+#define PFC_B_CMPD 0
+#define PFC_B_DBRED 150
+#define PFC_B_DBFED 150
+#define PFC_B_TZA_ACTION EPWM_TZ_ACTION_HIGH_Z
+#define PFC_B_TZB_ACTION EPWM_TZ_ACTION_HIGH_Z
+#define PFC_B_INTERRUPT_SOURCE EPWM_INT_TBCTR_DISABLED
+#define PFC_C_BASE EPWM3_BASE
+#define PFC_C_TBPRD 3125
+#define PFC_C_COUNTER_MODE EPWM_COUNTER_MODE_UP_DOWN
+#define PFC_C_TBPHS 0
+#define PFC_C_CMPA 1470
+#define PFC_C_CMPB 0
+#define PFC_C_CMPC 0
+#define PFC_C_CMPD 0
+#define PFC_C_DBRED 150
+#define PFC_C_DBFED 150
+#define PFC_C_TZA_ACTION EPWM_TZ_ACTION_HIGH_Z
+#define PFC_C_TZB_ACTION EPWM_TZ_ACTION_HIGH_Z
+#define PFC_C_INTERRUPT_SOURCE EPWM_INT_TBCTR_DISABLED
+
+//*****************************************************************************
+//
 // MEMCFG Configurations
+//
+//*****************************************************************************
+
+//*****************************************************************************
+//
+// SYNC Scheme Configurations
+//
+//*****************************************************************************
+
+//*****************************************************************************
+//
+// SYSCTL Configurations
 //
 //*****************************************************************************
 
@@ -94,7 +199,10 @@ void myCLA0_init();
 //*****************************************************************************
 void	Board_init();
 void	CLA_init();
+void	EPWM_init();
 void	MEMCFG_init();
+void	SYNC_init();
+void	SYSCTL_init();
 void	PinMux_init();
 
 //*****************************************************************************

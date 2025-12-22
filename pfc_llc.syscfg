@@ -1,10 +1,22 @@
+/**
+ * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
+ * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
+ * @cliArgs --device "F28004x" --part "F28004x_100PZ" --package "F28004x_100PZ" --context "system" --product "C2000WARE@6.00.01.00"
+ * @v2CliArgs --device "TMS320F280049C" --package "100PZ" --context "system" --product "C2000WARE@6.00.01.00"
+ * @versions {"tool":"1.25.0+4268"}
+ */
 
 /**
  * Import the modules used in this configuration.
  */
-const cla    = scripting.addModule("/driverlib/cla.js", {}, false);
-const cla1   = cla.addInstance();
-const memcfg = scripting.addModule("/driverlib/memcfg.js");
+const cla            = scripting.addModule("/driverlib/cla.js", {}, false);
+const cla1           = cla.addInstance();
+const device_support = scripting.addModule("/driverlib/device_support.js");
+const epwm           = scripting.addModule("/driverlib/epwm.js", {}, false);
+const epwm1          = epwm.addInstance();
+const epwm2          = epwm.addInstance();
+const epwm3          = epwm.addInstance();
+const memcfg         = scripting.addModule("/driverlib/memcfg.js");
 
 /**
  * Write custom configuration values to the imported modules.
@@ -20,6 +32,87 @@ cla1.cpuint_CLA_TASK_7  = false;
 cla1.cpuint_CLA_TASK_8  = false;
 cla1.trigger_CLA_TASK_1 = "CLA_TRIGGER_EPWM4INT";
 
+const divider3       = system.clockTree["PLL_ODIV"];
+divider3.divideValue = 2;
+
+const multiplier2         = system.clockTree["PLL_IMULT"];
+multiplier2.multiplyValue = 25;
+
+const mux2       = system.clockTree["OSCCLKSRCSEL"];
+mux2.inputSelect = "X1_XTAL";
+
+const pinFunction2     = system.clockTree["XTAL"];
+pinFunction2.XTAL_Freq = 16;
+
+epwm1.$name                                                      = "PFC_A";
+epwm1.epwmTimebase_hsClockDiv                                    = "EPWM_HSCLOCK_DIVIDER_1";
+epwm1.epwmTimebase_period                                        = 3125;
+epwm1.epwmTimebase_counterMode                                   = "EPWM_COUNTER_MODE_UP_DOWN";
+epwm1.epwmTimebase_syncOutPulseMode                              = "EPWM_SYNC_OUT_PULSE_ON_COUNTER_ZERO";
+epwm1.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_UP_CMPA   = "EPWM_AQ_OUTPUT_LOW";
+epwm1.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_DOWN_CMPA = "EPWM_AQ_OUTPUT_HIGH";
+epwm1.epwmDeadband_polarityFED                                   = "EPWM_DB_POLARITY_ACTIVE_LOW";
+epwm1.epwmDeadband_enableRED                                     = true;
+epwm1.epwmDeadband_enableFED                                     = true;
+epwm1.epwmDeadband_redShadowMode                                 = true;
+epwm1.epwmDeadband_delayRED                                      = 150;
+epwm1.epwmDeadband_fedShadowMode                                 = true;
+epwm1.epwmDeadband_delayFED                                      = 150;
+epwm1.epwmDeadband_dbControlGld                                  = true;
+epwm1.epwmDeadband_fedGld                                        = true;
+epwm1.epwmDeadband_redGld                                        = true;
+epwm1.epwmTimebase_forceSyncPulse                                = true;
+epwm1.epwmCounterCompare_cmpAGld                                 = true;
+epwm1.epwmCounterCompare_cmpALink                                = "EPWM_LINK_WITH_EPWM_1";
+epwm1.epwmCounterCompare_cmpA                                    = 1470;
+epwm1.epwm.$assign                                               = "EPWM1";
+
+epwm2.epwmTimebase_hsClockDiv                                    = "EPWM_HSCLOCK_DIVIDER_1";
+epwm2.epwmTimebase_period                                        = 3125;
+epwm2.epwmTimebase_counterMode                                   = "EPWM_COUNTER_MODE_UP_DOWN";
+epwm2.epwmCounterCompare_cmpA                                    = 1470;
+epwm2.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_UP_CMPA   = "EPWM_AQ_OUTPUT_LOW";
+epwm2.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_DOWN_CMPA = "EPWM_AQ_OUTPUT_HIGH";
+epwm2.epwmDeadband_polarityFED                                   = "EPWM_DB_POLARITY_ACTIVE_LOW";
+epwm2.epwmDeadband_enableRED                                     = true;
+epwm2.epwmDeadband_enableFED                                     = true;
+epwm2.epwmDeadband_redShadowMode                                 = true;
+epwm2.epwmDeadband_delayRED                                      = 150;
+epwm2.epwmDeadband_fedShadowMode                                 = true;
+epwm2.epwmDeadband_delayFED                                      = 150;
+epwm2.epwmDeadband_dbControlGld                                  = true;
+epwm2.epwmDeadband_fedGld                                        = true;
+epwm2.epwmDeadband_redGld                                        = true;
+epwm2.$name                                                      = "PFC_B";
+epwm2.epwmTimebase_phaseEnable                                   = true;
+epwm2.epwmTimebase_counterModeAfterSync                          = "EPWM_COUNT_MODE_UP_AFTER_SYNC";
+epwm2.epwmTimebase_syncOutPulseMode                              = "EPWM_SYNC_OUT_PULSE_ON_EPWMxSYNCIN";
+epwm2.epwmCounterCompare_cmpALink                                = "EPWM_LINK_WITH_EPWM_1";
+epwm2.epwmCounterCompare_cmpAGld                                 = true;
+epwm2.epwm.$assign                                               = "EPWM2";
+
+epwm3.epwmTimebase_hsClockDiv                                    = "EPWM_HSCLOCK_DIVIDER_1";
+epwm3.epwmTimebase_period                                        = 3125;
+epwm3.epwmTimebase_counterMode                                   = "EPWM_COUNTER_MODE_UP_DOWN";
+epwm3.epwmCounterCompare_cmpA                                    = 1470;
+epwm3.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_UP_CMPA   = "EPWM_AQ_OUTPUT_LOW";
+epwm3.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_DOWN_CMPA = "EPWM_AQ_OUTPUT_HIGH";
+epwm3.epwmDeadband_polarityFED                                   = "EPWM_DB_POLARITY_ACTIVE_LOW";
+epwm3.epwmDeadband_enableRED                                     = true;
+epwm3.epwmDeadband_enableFED                                     = true;
+epwm3.epwmDeadband_redShadowMode                                 = true;
+epwm3.epwmDeadband_delayRED                                      = 150;
+epwm3.epwmDeadband_fedShadowMode                                 = true;
+epwm3.epwmDeadband_delayFED                                      = 150;
+epwm3.epwmDeadband_dbControlGld                                  = true;
+epwm3.epwmDeadband_fedGld                                        = true;
+epwm3.epwmDeadband_redGld                                        = true;
+epwm3.epwmTimebase_phaseEnable                                   = true;
+epwm3.epwmTimebase_counterModeAfterSync                          = "EPWM_COUNT_MODE_UP_AFTER_SYNC";
+epwm3.epwmTimebase_syncOutPulseMode                              = "EPWM_SYNC_OUT_PULSE_ON_EPWMxSYNCIN";
+epwm3.$name                                                      = "PFC_C";
+epwm3.epwmCounterCompare_cmpAGld                                 = true;
+epwm3.epwmCounterCompare_cmpALink                                = "EPWM_LINK_WITH_EPWM_1";
 
 memcfg.config_MEMCFG_SECT_LS0        = "CLA_prog";
 memcfg.config_MEMCFG_SECT_LS1        = "CLA_data";
@@ -28,3 +121,15 @@ memcfg.config_MEMCFG_SECT_LS3        = "CLA_data";
 memcfg.init_MEMCFG_SECT_MSGCPUTOCLA1 = true;
 memcfg.init_MEMCFG_SECT_MSGCLA1TOCPU = true;
 
+/**
+ * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future
+ * version of the tool will not impact the pinmux you originally saw.  These lines can be completely deleted in order to
+ * re-solve from scratch.
+ */
+epwm1.epwm.epwm_aPin.$suggestSolution = "GPIO0";
+epwm1.epwm.epwm_bPin.$suggestSolution = "GPIO1";
+epwm2.epwm.epwm_aPin.$suggestSolution = "GPIO2";
+epwm2.epwm.epwm_bPin.$suggestSolution = "GPIO3";
+epwm3.epwm.$suggestSolution           = "EPWM3";
+epwm3.epwm.epwm_aPin.$suggestSolution = "GPIO4";
+epwm3.epwm.epwm_bPin.$suggestSolution = "GPIO5";

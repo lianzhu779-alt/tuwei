@@ -47,7 +47,7 @@
 //
 //*****************************************************************************
 //
-// Input Clock to SYSPLL (OSCCLK)	= 10 MHz    (INTOSC2 provides OSCCLK)
+// Input Clock to SYSPLL (OSCCLK)	= 16 MHz    (XTAL provides OSCCLK)
 //
 //##### SYSPLL ENABLED #####
 //
@@ -55,7 +55,7 @@
 // PLLSYSCLK				= 100 MHz
 // CPUCLK					= 100 MHz
 // SYSCLK					= 100 MHz
-// LSPCLK					= 25 MHz 
+// LSPCLK					= 50 MHz 
 	
 //*****************************************************************************
 //
@@ -63,26 +63,26 @@
 //
 //*****************************************************************************
 //
-//	Input Clock to SYSPLL (OSCCLK) = INTOSC2 = 10 MHz
+//	Input Clock to SYSPLL (OSCCLK) = XTAL = 16 MHz
 //
-#define DEVICE_OSCSRC_FREQ          10000000U
+#define DEVICE_OSCSRC_FREQ          16000000U
 //
 // Define to pass to SysCtl_setClock(). Will configure the clock as follows:
 // SYSPLL ENABLED
-// SYSCLK = 100 MHz = 10 MHz (OSCCLK) * (20 (IMULT) + 0 (FMULT)) / (1 (ODIV) * 2 (SYSCLKDIVSEL))	
-#define DEVICE_SYSCLK_FREQ          ((DEVICE_OSCSRC_FREQ * (20 + 0)) / (1 * 2))
+// SYSCLK = 100 MHz = 16 MHz (OSCCLK) * (25 (IMULT) + 0 (FMULT)) / (2 (ODIV) * 2 (SYSCLKDIVSEL))	
+#define DEVICE_SYSCLK_FREQ          ((DEVICE_OSCSRC_FREQ * (25 + 0)) / (2 * 2))
 //
-#define DEVICE_SETCLOCK_CFG         (SYSCTL_OSCSRC_OSC2 | SYSCTL_IMULT(20) | \
-									 SYSCTL_FMULT_NONE | SYSCTL_ODIV(1)  | \
+#define DEVICE_SETCLOCK_CFG         (SYSCTL_OSCSRC_XTAL | SYSCTL_IMULT(25) | \
+									 SYSCTL_FMULT_NONE | SYSCTL_ODIV(2)  | \
 									 SYSCTL_SYSDIV(2)| SYSCTL_PLL_ENABLE)
 
 //
 // Define to pass to SysCtl_setLowSpeedClock().
-// Low Speed Clock (LSPCLK) = 100 MHz / 4 = 25 MHz
+// Low Speed Clock (LSPCLK) = 100 MHz / 2 = 50 MHz
 //
-#define DEVICE_LSPCLK_CFG  			SYSCTL_LSPCLK_PRESCALE_4
+#define DEVICE_LSPCLK_CFG  			SYSCTL_LSPCLK_PRESCALE_2
 
-#define DEVICE_LSPCLK_FREQ          (DEVICE_SYSCLK_FREQ / 4)
+#define DEVICE_LSPCLK_FREQ          (DEVICE_SYSCLK_FREQ / 2)
 
 //*****************************************************************************
 //
@@ -154,7 +154,7 @@
 //	
 //*****************************************************************************
 //
-// Gated LSPCLK Domain (25 MHz) 
+// Gated LSPCLK Domain (50 MHz) 
 //
 //*****************************************************************************
 // SCI
