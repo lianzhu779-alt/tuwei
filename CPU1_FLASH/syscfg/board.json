@@ -1,4 +1,8 @@
 {
     "interruptInfo" : [
+        {
+            "interruptName": "INT_myADCA_1",
+            "interruptHandler": "ADC_FrameDone_INT"
+        }
     ]
 }

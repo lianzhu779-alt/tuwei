@@ -76,24 +76,24 @@ __attribute__((interrupt)) void Cla1Task1 ( void )
     //
     // Uncomment this to debug the CLA while connected to the debugger
     //
-    //__mdebugstop();
+    __mdebugstop();
 
-    //
+    
     // Write to the COMPA register to realize a particular duty value
-    //
-    // EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_A,
-    //                             (uint16_t)(duty * EPWM1_PERIOD + 0.5f));
+    
+    EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_A,
+                                (uint16_t)(duty * EPWM1_PERIOD + 0.5f));
                                 
-    // //
-    // // Update duty value and use the limiter
-    // //
-    // duty += 0.1f;
-    // duty = (duty > 0.9f) ? 0.1f : duty;
+    //
+    // Update duty value and use the limiter
+    //
+    duty += 0.1f;
+    duty = (duty > 0.9f) ? 0.1f : duty;
 
-    // //
-    // // Clear EPWM4 interrupt flag so that next interrupt can come in
-    // //
-    // EPWM_clearEventTriggerInterruptFlag(EPWM4_BASE);
+    //
+    // Clear EPWM4 interrupt flag so that next interrupt can come in
+    //
+    EPWM_clearEventTriggerInterruptFlag(EPWM4_BASE);
 }
 
 //-----------------------------------------------------------------------------

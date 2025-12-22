@@ -9,6 +9,10 @@
 /**
  * Import the modules used in this configuration.
  */
+const adc            = scripting.addModule("/driverlib/adc.js", {}, false);
+const adc1           = adc.addInstance();
+const adc2           = adc.addInstance();
+const adc3           = adc.addInstance();
 const cla            = scripting.addModule("/driverlib/cla.js", {}, false);
 const cla1           = cla.addInstance();
 const device_support = scripting.addModule("/driverlib/device_support.js");
@@ -21,6 +25,87 @@ const memcfg         = scripting.addModule("/driverlib/memcfg.js");
 /**
  * Write custom configuration values to the imported modules.
  */
+adc1.adcClockPrescaler              = "ADC_CLK_DIV_2_0";
+adc1.$name                          = "myADCA";
+adc1.enabledSOCs                    = ["ADC_SOC_NUMBER0","ADC_SOC_NUMBER1","ADC_SOC_NUMBER2","ADC_SOC_NUMBER3","ADC_SOC_NUMBER4","ADC_SOC_NUMBER5","ADC_SOC_NUMBER6","ADC_SOC_NUMBER7"];
+adc1.soc0SampleWindow               = 20;
+adc1.soc1SampleWindow               = 20;
+adc1.soc0Channel                    = "ADC_CH_ADCIN1";
+adc1.soc0Trigger                    = "ADC_TRIGGER_EPWM1_SOCA";
+adc1.soc1Channel                    = "ADC_CH_ADCIN2";
+adc1.soc2Channel                    = "ADC_CH_ADCIN3";
+adc1.soc2SampleWindow               = 20;
+adc1.soc3SampleWindow               = 20;
+adc1.soc1Trigger                    = "ADC_TRIGGER_EPWM1_SOCA";
+adc1.soc2Trigger                    = "ADC_TRIGGER_EPWM1_SOCA";
+adc1.soc3Trigger                    = "ADC_TRIGGER_EPWM1_SOCA";
+adc1.soc4Channel                    = "ADC_CH_ADCIN4";
+adc1.soc4SampleWindow               = 20;
+adc1.soc4Trigger                    = "ADC_TRIGGER_EPWM1_SOCA";
+adc1.soc5Channel                    = "ADC_CH_ADCIN5";
+adc1.soc5SampleWindow               = 20;
+adc1.soc5Trigger                    = "ADC_TRIGGER_EPWM1_SOCA";
+adc1.soc6SampleWindow               = 20;
+adc1.soc6Trigger                    = "ADC_TRIGGER_EPWM1_SOCA";
+adc1.soc7Channel                    = "ADC_CH_ADCIN10";
+adc1.soc7SampleWindow               = 20;
+adc1.soc6Channel                    = "ADC_CH_ADCIN6";
+adc1.soc7Trigger                    = "ADC_TRIGGER_EPWM1_SOCA";
+adc1.soc0Name                       = "V_LL_AB";
+adc1.soc1Name                       = "V_LL_BC";
+adc1.soc2Name                       = "V_LL_CA";
+adc1.soc3Name                       = "V_Ref_1V5";
+adc1.interruptPulseMode             = "ADC_PULSE_END_OF_CONV";
+adc1.enabledInts                    = ["ADC_INT_NUMBER1"];
+adc1.enableInterrupt1               = true;
+adc1.interrupt1SOCSource            = "ADC_SOC_NUMBER7";
+adc1.enableInterrupt1ContinuousMode = true;
+adc1.registerInterrupts             = ["1"];
+adc1.soc4Name                       = "T_LLC_Pri_MOS";
+adc1.soc5Name                       = "T_LLC_Sec_MOS";
+adc1.soc6Name                       = "T_Inv_3Ph_MOS";
+adc1.soc7Name                       = "T_Ambient";
+adc1.adcInt1.$name                  = "ADC_FrameDone_INT";
+adc1.adcInt1.enableInterrupt        = true;
+adc1.adcInt1.interruptHandler       = "ADC_FrameDone_INT";
+
+adc2.adcClockPrescaler = "ADC_CLK_DIV_2_0";
+adc2.$name             = "myADCB";
+adc2.adcBase           = "ADCB_BASE";
+adc2.enabledSOCs       = ["ADC_SOC_NUMBER0","ADC_SOC_NUMBER1","ADC_SOC_NUMBER2","ADC_SOC_NUMBER3"];
+adc2.soc0SampleWindow  = 20;
+adc2.soc0Trigger       = "ADC_TRIGGER_EPWM1_SOCA";
+adc2.soc1Trigger       = "ADC_TRIGGER_EPWM1_SOCA";
+adc2.soc1Name          = "V_DC800_CapU";
+adc2.soc1SampleWindow  = 20;
+adc2.soc2Name          = "V_DC800_CapL";
+adc2.soc2SampleWindow  = 20;
+adc2.soc2Trigger       = "ADC_TRIGGER_EPWM1_SOCA";
+adc2.soc3Name          = "V_DC125";
+adc2.soc3SampleWindow  = 20;
+adc2.soc3Trigger       = "ADC_TRIGGER_EPWM1_SOCA";
+adc2.soc0Name          = "I_DC800";
+adc2.soc1Channel       = "ADC_CH_ADCIN2";
+adc2.soc2Channel       = "ADC_CH_ADCIN3";
+adc2.soc3Channel       = "ADC_CH_ADCIN4";
+
+adc3.adcBase           = "ADCC_BASE";
+adc3.adcClockPrescaler = "ADC_CLK_DIV_2_0";
+adc3.enabledSOCs       = ["ADC_SOC_NUMBER0","ADC_SOC_NUMBER1","ADC_SOC_NUMBER2"];
+adc3.soc0Name          = "I_Phase_A";
+adc3.soc0SampleWindow  = 20;
+adc3.soc0Trigger       = "ADC_TRIGGER_EPWM1_SOCA";
+adc3.soc1Name          = "I_Phase_B";
+adc3.soc1SampleWindow  = 20;
+adc3.soc2Name          = "I_Phase_C";
+adc3.soc2SampleWindow  = 20;
+adc3.soc1Trigger       = "ADC_TRIGGER_EPWM1_SOCA";
+adc3.soc2Trigger       = "ADC_TRIGGER_EPWM1_SOCA";
+adc3.soc1Channel       = "ADC_CH_ADCIN1";
+adc3.soc2Channel       = "ADC_CH_ADCIN2";
+adc3.$name             = "myADCC";
+adc3.enableInterrupt1  = true;
+
 cla1.$name              = "myCLA0";
 cla1.cpuint_CLA_TASK_1  = false;
 cla1.cpuint_CLA_TASK_2  = false;
@@ -65,6 +150,9 @@ epwm1.epwmTimebase_forceSyncPulse                                = true;
 epwm1.epwmCounterCompare_cmpAGld                                 = true;
 epwm1.epwmCounterCompare_cmpALink                                = "EPWM_LINK_WITH_EPWM_1";
 epwm1.epwmCounterCompare_cmpA                                    = 1470;
+epwm1.epwmEventTrigger_EPWM_SOC_A_triggerEnable                  = true;
+epwm1.epwmEventTrigger_EPWM_SOC_A_triggerEventPrescalar          = "1";
+epwm1.epwmEventTrigger_EPWM_SOC_A_triggerSource                  = "EPWM_SOC_TBCTR_ZERO";
 epwm1.epwm.$assign                                               = "EPWM1";
 
 epwm2.epwmTimebase_hsClockDiv                                    = "EPWM_HSCLOCK_DIVIDER_1";

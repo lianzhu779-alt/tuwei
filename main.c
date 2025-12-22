@@ -121,13 +121,13 @@ void main(void)
     //
     // Initialize EPWM module
     //
-    initEPWM();
+    // initEPWM();
 
     //
     // Initialize resources
     //
     Board_init();
-    initCLA();
+    // initCLA();
 
     //
     // Enable global interrupts.
