@@ -1,0 +1,78 @@
+# TI Code Composer Studio (CCS) Build Outputs
+Debug/
+Release/
+!debug/
+
+# CCS generated makefiles and option files (intermediate only)
+CPU1_FLASH/**/makefile
+CPU1_FLASH/**/objects.mk
+CPU1_FLASH/**/sources.mk
+CPU1_FLASH/**/subdir_rules.mk
+CPU1_FLASH/**/subdir_vars.mk
+CPU1_FLASH/**/ccsObjs.opt
+CPU1_RAM/**/makefile
+CPU1_RAM/**/objects.mk
+CPU1_RAM/**/sources.mk
+CPU1_RAM/**/subdir_rules.mk
+CPU1_RAM/**/subdir_vars.mk
+CPU1_RAM/**/ccsObjs.opt
+
+# Generic build artifacts
+*.out
+*.map
+*.elf
+*.hex
+*.obj
+*.d
+*.pp
+*.opt
+*.mk
+
+# CCS project files (keep tracked unless you intentionally ignore them)
+
+# Theia IDE
+.theia/
+
+# Language server
+.clangd
+.cache/
+compile_commands.json
+
+# SysConfig outputs
+# Keep the .syscfg source; track generated files like board.c/h when needed
+# Track the device/ directory if shared driver sources are required
+
+# Linker command files (uncomment if auto-generated)
+# *_lnk.cmd
+# *.cmd
+
+# Backup and temporary files
+*.bak
+*.tmp
+*~
+*.swp
+
+# Build and library files
+*.lib
+*.a
+*.so
+*.dll
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+*.sublime-*
+.vscode/
+.idea/
+
+# Documentation outputs
+doxygen_output/
+*.pdf
+
+# Flash tool files
+*.txt.user
+*.xml.user
+*.xml
