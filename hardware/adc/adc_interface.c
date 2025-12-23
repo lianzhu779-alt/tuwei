@@ -1,4 +1,5 @@
 #include "adc_interface.h"
+#include "cla_shared.h"
 #include <math.h>
 
 //
@@ -6,6 +7,12 @@
 //
 ADC_SampleData_t g_ADC_Data = {0};
 ADC_PhysicalData_t g_ADC_PhysicalData = {0};
+
+#pragma DATA_SECTION(g_CLA_CpuToClaAdcData, "CpuToCla1MsgRAM");
+#pragma DATA_ALIGN(g_CLA_CpuToClaAdcData, 2)
+volatile CLA_CpuToClaAdcData_t g_CLA_CpuToClaAdcData = {0};
+
+static void ADC_UpdateClaMessage(void);
 
 //
 // 读取所有ADC采样结果
@@ -85,6 +92,20 @@ void ADC_ConvertToPhysical(const ADC_SampleData_t *raw, ADC_PhysicalData_t *phys
 }
 
 //
+// 将实时物理量拷贝到消息RAM，供CLA读取
+//
+static void ADC_UpdateClaMessage(void)
+{
+    g_CLA_CpuToClaAdcData.V_LL_AB = g_ADC_PhysicalData.V_LL_AB;
+    g_CLA_CpuToClaAdcData.V_LL_BC = g_ADC_PhysicalData.V_LL_BC;
+    g_CLA_CpuToClaAdcData.V_LL_CA = g_ADC_PhysicalData.V_LL_CA;
+    g_CLA_CpuToClaAdcData.V_DC800_Total = g_ADC_PhysicalData.V_DC800_Total;
+    g_CLA_CpuToClaAdcData.I_Phase_A = g_ADC_PhysicalData.I_Phase_A;
+    g_CLA_CpuToClaAdcData.I_Phase_B = g_ADC_PhysicalData.I_Phase_B;
+    g_CLA_CpuToClaAdcData.I_Phase_C = g_ADC_PhysicalData.I_Phase_C;
+}
+
+//
 // ADC中断服务程序 - ADCA INT1
 // 当所有ADCA的SOC转换完成时触发（基于SOC7）
 //
@@ -99,6 +120,7 @@ __interrupt void ADC_FrameDone_INT(void)
     // 转换为物理值
     //
     ADC_ConvertToPhysical(&g_ADC_Data, &g_ADC_PhysicalData);
+    ADC_UpdateClaMessage();
 
     //
     // 清除ADC中断标志

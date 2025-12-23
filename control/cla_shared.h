@@ -65,6 +65,18 @@ extern "C" {
 #define EPWM1_PERIOD        (uint16_t)(DEVICE_SYSCLK_FREQ / (2 * EPWM1_FREQ))
 #define EPWM4_PERIOD        (uint16_t)(DEVICE_SYSCLK_FREQ / EPWM4_FREQ)
 
+typedef struct {
+    float V_LL_AB;
+    float V_LL_BC;
+    float V_LL_CA;
+    float V_DC800_Total;
+    float I_Phase_A;
+    float I_Phase_B;
+    float I_Phase_C;
+} CLA_CpuToClaAdcData_t;
+
+extern volatile CLA_CpuToClaAdcData_t g_CLA_CpuToClaAdcData;
+
 //
 // Globals
 //
