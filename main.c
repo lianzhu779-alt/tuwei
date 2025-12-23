@@ -218,7 +218,7 @@ void initCLA(void)
     //
     // Force task 8, the one time initialization task
     //
-    CLA_forceTasks(CLA1_BASE, CLA_TASKFLAG_8);
+    CLA_forceTasks(CLA1_BASE, CLA_TASKFLAG_1);
 }
 
 

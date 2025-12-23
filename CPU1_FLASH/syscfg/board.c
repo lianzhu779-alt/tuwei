@@ -601,6 +601,9 @@ void EPWM_init(){
     EPWM_enableGlobalLoadRegisters(PFC_A_BASE, EPWM_GL_REGISTER_DBCTL);	
     EPWM_enableGlobalLoadRegisters(PFC_A_BASE, EPWM_GL_REGISTER_DBRED_DBREDHR);	
     EPWM_enableGlobalLoadRegisters(PFC_A_BASE, EPWM_GL_REGISTER_DBFED_DBFEDHR);	
+    EPWM_enableInterrupt(PFC_A_BASE);	
+    EPWM_setInterruptSource(PFC_A_BASE, EPWM_INT_TBCTR_ZERO);	
+    EPWM_setInterruptEventCount(PFC_A_BASE, 1);	
     EPWM_enableADCTrigger(PFC_A_BASE, EPWM_SOC_A);	
     EPWM_setADCTriggerSource(PFC_A_BASE, EPWM_SOC_A, EPWM_SOC_TBCTR_ZERO);	
     EPWM_setADCTriggerEventPrescale(PFC_A_BASE, EPWM_SOC_A, 1);	

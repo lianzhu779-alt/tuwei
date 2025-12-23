@@ -77,6 +77,14 @@ typedef struct {
 
 extern volatile CLA_CpuToClaAdcData_t g_CLA_CpuToClaAdcData;
 
+typedef struct {
+    float V_Phase_A;
+    float V_Phase_B;
+    float V_Phase_C;
+} CLA_ClaToCpuPhaseData_t;
+
+extern volatile CLA_ClaToCpuPhaseData_t g_CLA_ClaToCpuPhaseData;
+
 //
 // Globals
 //
