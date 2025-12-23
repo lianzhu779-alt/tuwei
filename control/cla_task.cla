@@ -1,3 +1,16 @@
+/**
+ * @file cla_task.cla
+ * @brief CLA任务实现 - PFC控制算法加速
+ * @details 本文件实现了运行在CLA(Control Law Accelerator)上的实时控制任务，
+ *          主要功能包括：
+ *          - 三相电压采样与相电压转换
+ *          - Clarke变换（ABC -> αβ坐标系）
+ *          - Park变换（αβ -> DQ0坐标系）
+ *          - PWM占空比控制
+ *          - 正负序分量提取
+ * @date 2025
+ */
+
 //
 // Included Files
 //
@@ -5,145 +18,177 @@
 #include <stdint.h>
 #include "epwm.h"
 #include "transforms.h"
+#include "abc_dq0_pos.h"
+#include "abc_dq0_neg.h"
 
 //
 // Globals
 //
-// Note that the globals defined in the .cla source are global to the cla source
-// file.  i.e. they may be shared across tasks. But they cannot be assigned an
-// initialized value here. To do so, one-time initialization task is used that
-// is triggered by software at the beginning
-//
-// Duty value
+
+/** @brief PWM占空比，范围0.1~0.9 */
 float duty;
 
+/** @brief CLA到CPU的相电压数据缓冲区，存放于CLA消息RAM */
 #pragma DATA_SECTION(g_CLA_ClaToCpuPhaseData, "Cla1ToCpuMsgRAM");
 volatile CLA_ClaToCpuPhaseData_t g_CLA_ClaToCpuPhaseData;
 
+/** @brief CLA到CPU的DQ0坐标系数据缓冲区，存放于CLA消息RAM */
+#pragma DATA_SECTION(g_CLA_ClaToCpuDQ0Data, "Cla1ToCpuMsgRAM");
+volatile CLA_ClaToCpuDQ0Data_t g_CLA_ClaToCpuDQ0Data;
 
-//-----------------------------------------------------------------------------
-// Task 1 - Line voltage processing
-// Description: Convert CPU-provided line voltages to phase voltages.
-//-----------------------------------------------------------------------------
+/** @brief ABC到DQ0正序变换对象 */
+static ABC_DQ0_POS g_abcDq0;
+
+/** @brief ABC到DQ0负序变换对象 */
+static ABC_DQ0_NEG g_abcDq0Neg;
+
+/**
+ * @brief CLA任务1 - 三相电压采样与坐标变换
+ * @details 执行流程：
+ *          1. 读取三相线电压 V_AB, V_BC, V_CA
+ *          2. 将线电压转换为相电压 Va, Vb, Vc
+ *          3. Clarke变换：将三相静止坐标系(ABC)转换为两相静止坐标系(αβ)
+ *          4. 计算电压矢量相角θ = atan2(β, α)
+ *          5. Park变换：将αβ坐标系转换为旋转坐标系(DQ0)
+ *          6. 提取正序分量和负序分量
+ *          7. 将结果传递到CPU消息RAM
+ * @note 由EPWM1触发，采样周期与PWM周期同步
+ */
 __attribute__((interrupt)) void Cla1Task1 ( void )
 {
-    // Uncomment this to debug the CLA while connected to the debugger
     __mdebugstop();
 
+    // ========== 变量声明与初始化 ==========
+    // 三相线电压（ADC采样值）
     float v_ab = g_CLA_CpuToClaAdcData.V_LL_AB;
     float v_bc = g_CLA_CpuToClaAdcData.V_LL_BC;
     float v_ca = g_CLA_CpuToClaAdcData.V_LL_CA;
+
+    // 三相相电压
     float va = 0.0f;
     float vb = 0.0f;
     float vc = 0.0f;
 
-    line_to_phase_voltages(v_ab, v_bc, v_ca, &va, &vb, &vc);
+    // αβ坐标系向量
+    AlphaBeta_Vec phaseVec;
 
+    // 角度与三角函数
+    float theta;
+    float sin_theta;
+    float cos_theta;
+
+    // ========== 电压变换 ==========
+    // 线电压转相电压
+    line_to_phase_voltages(v_ab, v_bc, v_ca, &va, &vb, &vc);
     g_CLA_ClaToCpuPhaseData.V_Phase_A = va;
     g_CLA_ClaToCpuPhaseData.V_Phase_B = vb;
     g_CLA_ClaToCpuPhaseData.V_Phase_C = vc;
 
+    // ========== 坐标变换 ==========
+    // Clarke变换：ABC -> αβ
+    clarke_amplitude(va, vb, vc, &phaseVec);
+
+    // 计算电压矢量相角
+    theta = CLAatan2_inline(phaseVec.beta, phaseVec.alpha);
+    CLAsincos_inline(theta, &sin_theta, &cos_theta);
+
+    // Park变换：αβ -> DQ0（正序分量）
+    ABC_DQ0_POS_run(&g_abcDq0, va, vb, vc, sin_theta, cos_theta);
+    g_CLA_ClaToCpuDQ0Data.D_axis = g_abcDq0.d;
+    g_CLA_ClaToCpuDQ0Data.Q_axis = g_abcDq0.q;
+    g_CLA_ClaToCpuDQ0Data.Zero_axis = g_abcDq0.z;
+
+    // Park变换：αβ -> DQ0（负序分量）
+    ABC_DQ0_NEG_run(&g_abcDq0Neg, va, vb, vc, sin_theta, cos_theta);
+
+    // ========== 中断处理 ==========
+    // 清除中断标志
     EPWM_clearEventTriggerInterruptFlag(EPWM1_BASE);
 }
 
-//-----------------------------------------------------------------------------
-// Task 2 - PWM control loop
-// Description: PWM control logic can be implemented here.
-//-----------------------------------------------------------------------------
+/**
+ * @brief CLA任务2 - PWM占空比更新
+ * @details 功能：
+ *          - 根据duty值更新EPWM1的比较值
+ *          - 测试模式：占空比从0.1递增到0.9后循环
+ * @note 由EPWM4触发，用于PWM波形生成
+ * @warning 当前为测试代码，实际应用中应根据控制算法计算占空比
+ */
 __attribute__((interrupt))  void Cla1Task2 ( void )
 {
-    // Uncomment this to debug the CLA while connected to the debugger
     __mdebugstop();
-
-    // Write to the COMPA register to realize a particular duty value
+    // 更新PWM比较值（占空比控制）
     EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_A,
                                 (uint16_t)(duty * EPWM1_PERIOD + 0.5f));
 
-    // Update duty value and use the limiter
+    // 测试代码：占空比递增
     duty += 0.1f;
     duty = (duty > 0.9f) ? 0.1f : duty;
 
-    // Clear EPWM4 interrupt flag so that next interrupt can come in
+    // 清除中断标志
     EPWM_clearEventTriggerInterruptFlag(EPWM4_BASE);
 }
 
-//-----------------------------------------------------------------------------
-//
-// Task 3 - Title Here
-//
-// Description: Description/steps here.
-//
-//-----------------------------------------------------------------------------
+/**
+ * @brief CLA任务3 - 预留
+ * @details 当前未使用，预留给未来功能扩展
+ */
 __attribute__((interrupt))  void Cla1Task3 ( void )
 {
-
 }
 
-//-----------------------------------------------------------------------------
-//
-// Task 4 - Title Here
-//
-// Description: Description/steps here.
-//
-//-----------------------------------------------------------------------------
+/**
+ * @brief CLA任务4 - 预留
+ * @details 当前未使用，预留给未来功能扩展
+ */
 __attribute__((interrupt))  void Cla1Task4 ( void )
 {
-
 }
 
-//-----------------------------------------------------------------------------
-//
-// Task 5 - Title Here
-//
-// Description: Description/steps here.
-//
-//-----------------------------------------------------------------------------
+/**
+ * @brief CLA任务5 - 预留
+ * @details 当前未使用，预留给未来功能扩展
+ */
 __attribute__((interrupt))  void Cla1Task5 ( void )
 {
-
 }
 
-//-----------------------------------------------------------------------------
-//
-// Task 6 - Title Here
-//
-// Description: Description/steps here.
-//
-//-----------------------------------------------------------------------------
+/**
+ * @brief CLA任务6 - 预留
+ * @details 当前未使用，预留给未来功能扩展
+ */
 __attribute__((interrupt))  void Cla1Task6 ( void )
 {
-
 }
 
-//-----------------------------------------------------------------------------
-//
-// Task 7 - Title Here
-//
-// Description: Description/steps here.
-//
-//-----------------------------------------------------------------------------
+/**
+ * @brief CLA任务7 - 预留
+ * @details 当前未使用，预留给未来功能扩展
+ */
 __attribute__((interrupt))  void Cla1Task7 ( void )
 {
-
 }
 
-//-----------------------------------------------------------------------------
-//
-// Task 8 - One Time Initialization Task
-//
-// Description: This task will initialize the CLA global variables
-//
-//-----------------------------------------------------------------------------
+/**
+ * @brief CLA任务8 - 系统初始化与复位
+ * @details 执行流程：
+ *          1. 重置PWM占空比为初始值0.1
+ *          2. 重置DQ0正序变换对象
+ *          3. 重置DQ0负序变换对象
+ * @note 通常在系统启动或故障恢复时调用
+ */
 __attribute__((interrupt))  void Cla1Task8 ( void )
 {
-    //
-    // Uncomment this to debug the CLA while connected to the debugger
-    //
-    //__mdebugstop();
-
+    // 重置占空比为初始值
     duty = 0.1f;
+
+    // 重置坐标变换对象
+    ABC_DQ0_POS_reset(&g_abcDq0);
+    ABC_DQ0_NEG_reset(&g_abcDq0Neg);
 }
 
 //
 // End of File
 //
+
+

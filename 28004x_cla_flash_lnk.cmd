@@ -154,6 +154,7 @@ SECTIONS
    .bss_cla         : > RAMLS1,           PAGE = 1
 
    Cla1DataRam      : > RAMLS2,           PAGE = 1
+   CLA1mathTables   : > RAMLS2,           PAGE = 1
    cla_shared       : > RAMLS1,           PAGE = 1
    CLADataLS1       : > RAMLS1,           PAGE = 1
 

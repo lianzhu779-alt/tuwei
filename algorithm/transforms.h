@@ -1,4 +1,4 @@
-//#############################################################################
+﻿//#############################################################################
 //
 // FILE:   transforms.h
 //
@@ -36,44 +36,53 @@ typedef struct
 
 //*****************************************************************************
 //
-// 坐标变换函数（重新导出自pll_dsrf_fast.h）
+// 坐标变换函数
 //
 //*****************************************************************************
 
-// Clarke变换（三相abc到两相αβ）
-// 注：这些函数在pll_dsrf_fast.h中已定义，这里仅作为统一入口
-
 /**
- * @brief 等功率Clarke变换（三相abc到两相αβ）
+ * @brief Park变换（αβ -> dq，正向旋转）
  *
- * @param va        A相电压（V）
- * @param vb        B相电压（V）
- * @param vc        C相电压（V）
- * @param v_alpha   输出：α轴电压（V）
- * @param v_beta    输出：β轴电压（V）
- *
- * @note 该函数已在pll_dsrf_fast.c中实现，使用TMU硬件加速
- */
-// Clarke_transform_power_fast() 已在pll_dsrf_fast.h中声明
-
-/**
- * @brief Park变换（αβ到dq，正向旋转）
- *
- * @param v_alpha   α轴电压（V）
- * @param v_beta    β轴电压（V）
+ * @param v_alpha   α轴分量
+ * @param v_beta    β轴分量
  * @param cos_theta 预计算的 cos(θ)
  * @param sin_theta 预计算的 sin(θ)
- * @param output    输出：dq分量
- *
- * @note 该函数已在pll_dsrf_fast.h中声明为inline函数
+ * @param d         输出：d轴分量
+ * @param q         输出：q轴分量
  */
-// Park_transform_positive_fast() 已在pll_dsrf_fast.h中声明
+static inline void Park_transform_positive_fast(float v_alpha, float v_beta,
+                                                float cos_theta, float sin_theta,
+                                                float *d, float *q)
+{
+    *d = v_alpha * cos_theta + v_beta * sin_theta;
+    *q = -v_alpha * sin_theta + v_beta * cos_theta;
+}
 
 //*****************************************************************************
 //
 // 新增坐标变换函数
 //
 //*****************************************************************************
+
+/**
+ * @brief 等幅值Clarke变换（三相abc到两相αβ）
+ *
+ * @param ia        A相分量
+ * @param ib        B相分量
+ * @param ic        C相分量
+ * @param output    输出：αβ矢量
+ */
+static inline void clarke_amplitude(float ia, float ib, float ic,
+                                    AlphaBeta_Vec *output)
+{
+    const float SCALE = 0.816496580927726f;         // sqrt(2/3)
+    const float HALF = 0.5f;
+    const float SQRT3_OVER_2 = 0.8660254037844387f; // sqrt(3)/2
+
+    float sum_bc = ib + ic;
+    output->alpha = SCALE * (ia - HALF * sum_bc);
+    output->beta  = SCALE * (SQRT3_OVER_2 * (ib - ic));
+}
 
 /**
  * @brief 逆Park变换（dq → αβ）
