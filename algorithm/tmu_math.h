@@ -3,6 +3,10 @@
 
 #include <math.h>
 
+#if defined(__TMS320C28XX_CLA__)
+#include "CLAmath.h"
+#endif
+
 //
 // TMU-friendly math helpers.
 // When building with TI Clang (TMU enabled) the __builtin_* versions
@@ -47,6 +51,37 @@ static inline float TMU_sqrtf(float value)
     return __builtin_sqrtf(value);
 #else
     return sqrtf(value);
+#endif
+}
+
+
+#if defined(__TI_COMPILER_VERSION__)
+#pragma FUNC_ALWAYS_INLINE(TMU_sincosf)
+#endif
+
+#if defined(__TI_COMPILER_VERSION__)
+#pragma FUNC_ALWAYS_INLINE(TMU_rsqrtf)
+#endif
+static inline float TMU_rsqrtf(float value)
+{
+#if __has_builtin(__builtin_rsqrtf)
+    return __builtin_rsqrtf(value);
+#else
+    return 1.0f / TMU_sqrtf(value);
+#endif
+}
+
+
+static inline void TMU_sincosf(float angle, float *sine, float *cosine)
+{
+#if defined(__TMS320C28XX_CLA__)
+    CLAsincos_inline(angle, sine, cosine);
+#elif __has_builtin(__builtin_sinf) && __has_builtin(__builtin_cosf)
+    *sine = __builtin_sinf(angle);
+    *cosine = __builtin_cosf(angle);
+#else
+    *sine = sinf(angle);
+    *cosine = cosf(angle);
 #endif
 }
 

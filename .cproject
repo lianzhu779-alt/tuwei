@@ -184,13 +184,15 @@
                                     <listOptionValue value="${COM_TI_C2000WARE_SYMBOLS}"/>
                                     <listOptionValue value="_FLASH"/>
                                 </option>
-                                <option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.OPT_LEVEL.828818397" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.OPT_LEVEL" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.OPT_LEVEL.off" valueType="enumerated"/>
+                                <option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.OPT_LEVEL.828818397" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.OPT_LEVEL" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.OPT_LEVEL.2" valueType="enumerated"/>
                                 <option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.CLA_BACKGROUND_TASK.726563018" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.CLA_BACKGROUND_TASK" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.CLA_BACKGROUND_TASK.off" valueType="enumerated"/>
                                 <option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.CLA_SIGNED_COMPARE_WORKAROUND.988596421" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.CLA_SIGNED_COMPARE_WORKAROUND" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.CLA_SIGNED_COMPARE_WORKAROUND.on" valueType="enumerated"/>
                                 <option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.GEN_FUNC_SUBSECTIONS.1694880064" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.GEN_FUNC_SUBSECTIONS" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.GEN_FUNC_SUBSECTIONS.on" valueType="enumerated"/>
                                 <option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.DIAG_SUPPRESS.304272903" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.DIAG_SUPPRESS" valueType="stringList">
                                     <listOptionValue value="10063"/>
                                 </option>
+                                <option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.FP_MODE.977487349" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.FP_MODE" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.FP_MODE.relaxed" valueType="enumerated"/>
+                                <option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.FP_REASSOC.396240627" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.FP_REASSOC" value="com.ti.ccstudio.buildDefinitions.C2000_22.6.compilerID.FP_REASSOC.on" valueType="enumerated"/>
                             </tool>
                             <tool id="com.ti.ccstudio.buildDefinitions.C2000_22.6.exe.linkerDebug.1389588550" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.exe.linkerDebug">
                                 <option id="com.ti.ccstudio.buildDefinitions.C2000_22.6.linkerID.STACK_SIZE.1623120634" superClass="com.ti.ccstudio.buildDefinitions.C2000_22.6.linkerID.STACK_SIZE" value="0x3F8" valueType="string"/>

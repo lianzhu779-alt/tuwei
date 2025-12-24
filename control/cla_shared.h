@@ -95,6 +95,23 @@ extern volatile CLA_ClaToCpuDQ0Data_t g_CLA_ClaToCpuDQ0Data;
 
 extern volatile CLA_ClaToCpuDQ0Data_t g_CLA_ClaToCpuDQ0NegData;
 
+/**
+ * @brief SOGI-PLL数据传输结构（CLA到CPU）
+ * @details 包含PLL锁定的频率、相位和正负序分量信息
+ */
+typedef struct {
+    float theta;        /**< 锁定相角 (rad) */
+    float freq;         /**< 锁定频率 (Hz) */
+    float omega;        /**< 锁定角频率 (rad/s) */
+    float d_pos;        /**< 正序D轴分量 */
+    float q_pos;        /**< 正序Q轴分量 */
+    float d_neg;        /**< 负序D轴分量 */
+    float q_neg;        /**< 负序Q轴分量 */
+    float is_locked;    /**< 锁定状态标志，1=已锁定，0=未锁定 */
+} CLA_ClaToCpuPllData_t;
+
+extern volatile CLA_ClaToCpuPllData_t g_CLA_ClaToCpuPllData;
+
 //
 // Globals
 //
