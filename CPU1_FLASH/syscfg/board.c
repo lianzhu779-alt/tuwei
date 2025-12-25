@@ -55,6 +55,7 @@ void Board_init()
 	MEMCFG_init();
 	ADC_init();
 	EPWM_init();
+	GPIO_init();
 	INTERRUPT_init();
 
 	EDIS;
@@ -104,6 +105,22 @@ void PinMux_init()
 	GPIO_setPadConfig(PFC_C_EPWMB_GPIO, GPIO_PIN_TYPE_STD);
 	GPIO_setQualificationMode(PFC_C_EPWMB_GPIO, GPIO_QUAL_SYNC);
 
+	// GPIO56 -> LED_STATUS_RED Pinmux
+	GPIO_setPinConfig(GPIO_56_GPIO56);
+	// GPIO57 -> LED_STATUS_BLUE Pinmux
+	GPIO_setPinConfig(GPIO_57_GPIO57);
+	// GPIO59 -> LED_STATUS_GREEN Pinmux
+	GPIO_setPinConfig(GPIO_59_GPIO59);
+	// GPIO58 -> LED_HEARTBEAT Pinmux
+	GPIO_setPinConfig(GPIO_58_GPIO58);
+	// GPIO22_VFBSW -> SYS_FAN1_TACH Pinmux
+	GPIO_setPinConfig(GPIO_22_GPIO22);
+	// GPIO28 -> SYS_FAN2_TACH Pinmux
+	GPIO_setPinConfig(GPIO_28_GPIO28);
+	// GPIO27 -> PFC_Relay Pinmux
+	GPIO_setPinConfig(GPIO_27_GPIO27);
+	// GPIO26 -> SYS_FAN3_TACH Pinmux
+	GPIO_setPinConfig(GPIO_26_GPIO26);
 
 }
 
@@ -687,6 +704,79 @@ void EPWM_init(){
     EPWM_enableGlobalLoadRegisters(PFC_C_BASE, EPWM_GL_REGISTER_DBCTL);	
     EPWM_enableGlobalLoadRegisters(PFC_C_BASE, EPWM_GL_REGISTER_DBRED_DBREDHR);	
     EPWM_enableGlobalLoadRegisters(PFC_C_BASE, EPWM_GL_REGISTER_DBFED_DBFEDHR);	
+}
+
+//*****************************************************************************
+//
+// GPIO Configurations
+//
+//*****************************************************************************
+void GPIO_init(){
+	LED_STATUS_RED_init();
+	LED_STATUS_BLUE_init();
+	LED_STATUS_GREEN_init();
+	LED_HEARTBEAT_init();
+	SYS_FAN1_TACH_init();
+	SYS_FAN2_TACH_init();
+	PFC_Relay_init();
+	SYS_FAN3_TACH_init();
+}
+
+void LED_STATUS_RED_init(){
+	GPIO_writePin(LED_STATUS_RED, 0);
+	GPIO_setPadConfig(LED_STATUS_RED, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(LED_STATUS_RED, GPIO_QUAL_SYNC);
+	GPIO_setDirectionMode(LED_STATUS_RED, GPIO_DIR_MODE_OUT);
+	GPIO_setControllerCore(LED_STATUS_RED, GPIO_CORE_CPU1);
+}
+void LED_STATUS_BLUE_init(){
+	GPIO_writePin(LED_STATUS_BLUE, 0);
+	GPIO_setPadConfig(LED_STATUS_BLUE, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(LED_STATUS_BLUE, GPIO_QUAL_SYNC);
+	GPIO_setDirectionMode(LED_STATUS_BLUE, GPIO_DIR_MODE_OUT);
+	GPIO_setControllerCore(LED_STATUS_BLUE, GPIO_CORE_CPU1);
+}
+void LED_STATUS_GREEN_init(){
+	GPIO_writePin(LED_STATUS_GREEN, 0);
+	GPIO_setPadConfig(LED_STATUS_GREEN, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(LED_STATUS_GREEN, GPIO_QUAL_SYNC);
+	GPIO_setDirectionMode(LED_STATUS_GREEN, GPIO_DIR_MODE_OUT);
+	GPIO_setControllerCore(LED_STATUS_GREEN, GPIO_CORE_CPU1);
+}
+void LED_HEARTBEAT_init(){
+	GPIO_writePin(LED_HEARTBEAT, 1);
+	GPIO_setPadConfig(LED_HEARTBEAT, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(LED_HEARTBEAT, GPIO_QUAL_SYNC);
+	GPIO_setDirectionMode(LED_HEARTBEAT, GPIO_DIR_MODE_OUT);
+	GPIO_setControllerCore(LED_HEARTBEAT, GPIO_CORE_CPU1);
+}
+void SYS_FAN1_TACH_init(){
+	GPIO_writePin(SYS_FAN1_TACH, 0);
+	GPIO_setPadConfig(SYS_FAN1_TACH, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(SYS_FAN1_TACH, GPIO_QUAL_SYNC);
+	GPIO_setDirectionMode(SYS_FAN1_TACH, GPIO_DIR_MODE_IN);
+	GPIO_setControllerCore(SYS_FAN1_TACH, GPIO_CORE_CPU1);
+}
+void SYS_FAN2_TACH_init(){
+	GPIO_writePin(SYS_FAN2_TACH, 0);
+	GPIO_setPadConfig(SYS_FAN2_TACH, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(SYS_FAN2_TACH, GPIO_QUAL_SYNC);
+	GPIO_setDirectionMode(SYS_FAN2_TACH, GPIO_DIR_MODE_IN);
+	GPIO_setControllerCore(SYS_FAN2_TACH, GPIO_CORE_CPU1);
+}
+void PFC_Relay_init(){
+	GPIO_writePin(PFC_Relay, 1);
+	GPIO_setPadConfig(PFC_Relay, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(PFC_Relay, GPIO_QUAL_SYNC);
+	GPIO_setDirectionMode(PFC_Relay, GPIO_DIR_MODE_OUT);
+	GPIO_setControllerCore(PFC_Relay, GPIO_CORE_CPU1);
+}
+void SYS_FAN3_TACH_init(){
+	GPIO_writePin(SYS_FAN3_TACH, 0);
+	GPIO_setPadConfig(SYS_FAN3_TACH, GPIO_PIN_TYPE_STD);
+	GPIO_setQualificationMode(SYS_FAN3_TACH, GPIO_QUAL_SYNC);
+	GPIO_setDirectionMode(SYS_FAN3_TACH, GPIO_DIR_MODE_IN);
+	GPIO_setControllerCore(SYS_FAN3_TACH, GPIO_CORE_CPU1);
 }
 
 //*****************************************************************************

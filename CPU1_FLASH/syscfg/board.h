@@ -105,6 +105,38 @@ extern "C"
 #define GPIO_PIN_EPWM3_B 5
 #define PFC_C_EPWMB_GPIO 5
 #define PFC_C_EPWMB_PIN_CONFIG GPIO_5_EPWM3_B
+//
+// GPIO56 - GPIO Settings
+//
+#define LED_STATUS_RED_GPIO_PIN_CONFIG GPIO_56_GPIO56
+//
+// GPIO57 - GPIO Settings
+//
+#define LED_STATUS_BLUE_GPIO_PIN_CONFIG GPIO_57_GPIO57
+//
+// GPIO59 - GPIO Settings
+//
+#define LED_STATUS_GREEN_GPIO_PIN_CONFIG GPIO_59_GPIO59
+//
+// GPIO58 - GPIO Settings
+//
+#define LED_HEARTBEAT_GPIO_PIN_CONFIG GPIO_58_GPIO58
+//
+// GPIO22 - GPIO Settings
+//
+#define SYS_FAN1_TACH_GPIO_PIN_CONFIG GPIO_22_GPIO22
+//
+// GPIO28 - GPIO Settings
+//
+#define SYS_FAN2_TACH_GPIO_PIN_CONFIG GPIO_28_GPIO28
+//
+// GPIO27 - GPIO Settings
+//
+#define PFC_Relay_GPIO_PIN_CONFIG GPIO_27_GPIO27
+//
+// GPIO26 - GPIO Settings
+//
+#define SYS_FAN3_TACH_GPIO_PIN_CONFIG GPIO_26_GPIO26
 
 //*****************************************************************************
 //
@@ -275,6 +307,28 @@ void myCLA0_init();
 
 //*****************************************************************************
 //
+// GPIO Configurations
+//
+//*****************************************************************************
+#define LED_STATUS_RED 56
+void LED_STATUS_RED_init();
+#define LED_STATUS_BLUE 57
+void LED_STATUS_BLUE_init();
+#define LED_STATUS_GREEN 59
+void LED_STATUS_GREEN_init();
+#define LED_HEARTBEAT 58
+void LED_HEARTBEAT_init();
+#define SYS_FAN1_TACH 22
+void SYS_FAN1_TACH_init();
+#define SYS_FAN2_TACH 28
+void SYS_FAN2_TACH_init();
+#define PFC_Relay 27
+void PFC_Relay_init();
+#define SYS_FAN3_TACH 26
+void SYS_FAN3_TACH_init();
+
+//*****************************************************************************
+//
 // INTERRUPT Configurations
 //
 //*****************************************************************************
@@ -313,6 +367,7 @@ void	ADC_init();
 void	ASYSCTL_init();
 void	CLA_init();
 void	EPWM_init();
+void	GPIO_init();
 void	INTERRUPT_init();
 void	MEMCFG_init();
 void	SYNC_init();

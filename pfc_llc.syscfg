@@ -20,6 +20,15 @@ const epwm           = scripting.addModule("/driverlib/epwm.js", {}, false);
 const epwm1          = epwm.addInstance();
 const epwm2          = epwm.addInstance();
 const epwm3          = epwm.addInstance();
+const gpio           = scripting.addModule("/driverlib/gpio.js", {}, false);
+const gpio1          = gpio.addInstance();
+const gpio2          = gpio.addInstance();
+const gpio3          = gpio.addInstance();
+const gpio4          = gpio.addInstance();
+const gpio5          = gpio.addInstance();
+const gpio6          = gpio.addInstance();
+const gpio7          = gpio.addInstance();
+const gpio8          = gpio.addInstance();
 const memcfg         = scripting.addModule("/driverlib/memcfg.js");
 
 /**
@@ -204,6 +213,45 @@ epwm3.epwmTimebase_syncOutPulseMode                              = "EPWM_SYNC_OU
 epwm3.$name                                                      = "PFC_C";
 epwm3.epwmCounterCompare_cmpAGld                                 = true;
 epwm3.epwmCounterCompare_cmpALink                                = "EPWM_LINK_WITH_EPWM_1";
+
+gpio1.$name             = "LED_STATUS_RED";
+gpio1.writeInitialValue = true;
+gpio1.direction         = "GPIO_DIR_MODE_OUT";
+gpio1.gpioPin.$assign   = "GPIO56";
+
+gpio2.writeInitialValue = true;
+gpio2.direction         = "GPIO_DIR_MODE_OUT";
+gpio2.$name             = "LED_STATUS_BLUE";
+gpio2.gpioPin.$assign   = "GPIO57";
+
+gpio3.writeInitialValue = true;
+gpio3.direction         = "GPIO_DIR_MODE_OUT";
+gpio3.$name             = "LED_STATUS_GREEN";
+gpio3.gpioPin.$assign   = "GPIO59";
+
+gpio4.$name             = "LED_HEARTBEAT";
+gpio4.writeInitialValue = true;
+gpio4.direction         = "GPIO_DIR_MODE_OUT";
+gpio4.initialValue      = 1;
+gpio4.gpioPin.$assign   = "GPIO58";
+
+gpio5.$name             = "SYS_FAN1_TACH";
+gpio5.writeInitialValue = true;
+gpio5.gpioPin.$assign   = "GPIO22_VFBSW";
+
+gpio6.$name             = "SYS_FAN2_TACH";
+gpio6.writeInitialValue = true;
+gpio6.gpioPin.$assign   = "GPIO28";
+
+gpio7.writeInitialValue = true;
+gpio7.$name             = "PFC_Relay";
+gpio7.direction         = "GPIO_DIR_MODE_OUT";
+gpio7.initialValue      = 1;
+gpio7.gpioPin.$assign   = "GPIO27";
+
+gpio8.writeInitialValue = true;
+gpio8.$name             = "SYS_FAN3_TACH";
+gpio8.gpioPin.$assign   = "GPIO26";
 
 memcfg.config_MEMCFG_SECT_LS0        = "CLA_prog";
 memcfg.config_MEMCFG_SECT_LS2        = "CLA_data";
