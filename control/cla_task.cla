@@ -16,18 +16,41 @@
 //
 #include <cla_shared.h>
 #include <stdint.h>
+#include "board.h"
 #include "epwm.h"
 #include "transforms.h"
-// #include "abc_dq0_pos.h"  // 方式1需要，方式2不需要
-// #include "abc_dq0_neg.h"  // 方式1需要，方式2不需要
 #include "sogi_pll.h"
+
+//
+// 前馈电流环配置
+//
+#define CLA_CONTROL_TS              (1.0f / 16000.0f)
+#define CLA_VDC_REF_V               760.0f
+#define CLA_VLOOP_KP                0.02f
+#define CLA_VLOOP_KI                5.0f
+#define CLA_IL_KP                   0.18f
+#define CLA_IL_KI                   32.0f
+#define CLA_ID_LIMIT_A              45.0f
+#define CLA_VCMD_LIMIT_V            (0.45f * CLA_VDC_REF_V)
+#define CLA_GRID_V_PEAK_BASE        325.0f
+#define CLA_VOLTAGE_NORM_GAIN       (1.0f / CLA_GRID_V_PEAK_BASE)
+#define CLA_MIN_VDC_FOR_MOD         100.0f
+#define CLA_DUTY_MIN                0.05f
+#define CLA_DUTY_MAX                0.95f
+
+typedef struct
+{
+    float voltageLoopIntegral;  // 直流母线电压外环积分项
+    float idIntegral;           // d轴电流环积分项
+    float iqIntegral;           // q轴电流环积分项
+} PFC_CurrentLoopState_t;
+
+static PFC_CurrentLoopState_t g_currentLoopState; // CLA侧电流环状态缓存（任务8中复位）
+
 
 //
 // Globals
 //
-
-/** @brief PWM占空比，范围0.1~0.9 */
-float duty;
 
 /** @brief CLA到CPU的相电压数据缓冲区，存放于CLA消息RAM */
 #pragma DATA_SECTION(g_CLA_ClaToCpuPhaseData, "Cla1ToCpuMsgRAM");
@@ -55,54 +78,158 @@ static SOGI_PLL g_sogiPll;
  *          6. 将结果传递到CPU消息RAM
  *
  * @note 由EPWM1触发，采样周期与PWM周期同步
- * @note 当前使用方式2：直接使用SOGI-PLL内部正负序分量
+ * @note 直接使用SOGI-PLL内部正负序分量
  *       优势：谐波抑制-40dB/decade，抗噪声能力强，计算效率高
- * @note 如需切换到方式1（传统ABC_DQ0），取消相关代码注释
  */
+
 __attribute__((interrupt)) void Cla1Task1 ( void )
 {
     __mdebugstop();
+    // 调试构建下在此停住CLA，便于单步查看消息RAM与寄存器
 
     // ========== 变量声明与初始化 ==========
-    // 三相线电压（ADC采样值）
-    float v_ab = g_CLA_CpuToClaAdcData.V_LL_AB;
+    float v_ab = g_CLA_CpuToClaAdcData.V_LL_AB; // 三相线电压（相继变换前）
     float v_bc = g_CLA_CpuToClaAdcData.V_LL_BC;
     float v_ca = g_CLA_CpuToClaAdcData.V_LL_CA;
+    // 线电压采样值已经在CPU侧做过标定与滤波，单位默认为伏
 
-    // 三相相电压
     float va = 0.0f, vb = 0.0f, vc = 0.0f;
+    // 先清零相电压变量，防止上一周期残留值影响本次计算
 
-    // αβ坐标系向量
     AlphaBeta_Vec phaseVec;
-
-    // 角度与三角函数（方式1需要，方式2不需要）
-    // float theta, sin_theta, cos_theta;
+    // phaseVec保存电压αβ矢量，供PLL与SVPWM链路共享
+    AlphaBeta_Vec currentVec;
+    // currentVec保存电流αβ矢量，供电流环的Park变换使用
 
     // ========== 电压变换 ==========
-    // 线电压转相电压
     line_to_phase_voltages(v_ab, v_bc, v_ca, &va, &vb, &vc);
+    // 线->相变换假设系统三相对称，异常分量将在SOGI及dq环中被抑制
     g_CLA_ClaToCpuPhaseData.V_Phase_A = va;
     g_CLA_ClaToCpuPhaseData.V_Phase_B = vb;
     g_CLA_ClaToCpuPhaseData.V_Phase_C = vc;
+    // 结果实时写入消息RAM，CPU侧波形监测/保护逻辑可立即读取
 
     // ========== Clarke变换与SOGI-PLL ==========
-    // Clarke变换：ABC -> αβ
-    clarke_amplitude(va, vb, vc, &phaseVec);
+    clarke_amplitude(va, vb, vc, &phaseVec); // 把三相电压映射到αβ坐标
+    // Clarke幅值保持算法确保αβ矢量幅值与物理测量一致
 
-    // 运行SOGI-PLL（滤波、锁相、频率跟踪）
-    // 注意：SOGI_PLL_run内部已经计算并缓存了sin/cos值
-    SOGI_PLL_run(&g_sogiPll, phaseVec.alpha, phaseVec.beta);
+    SOGI_PLL_run(&g_sogiPll, phaseVec.alpha, phaseVec.beta); // 完成滤波、锁相、正负序提取
+    // 一次SOGI-PLL运行即可获得锁相角度、sin/cos以及正负序电压
 
-    // 方式2：直接使用SOGI-PLL内部的正负序分量（已滤波，推荐）✅
-    // 优势：
-    //   1. SOGI内部已完成Park变换，避免重复计算
-    //   2. SOGI滤波后的数据，谐波抑制能力强（-40dB/decade）
-    //   3. 计算效率更高，节省约5-8个CLA周期
-    g_CLA_ClaToCpuDQ0Data.D_axis = g_sogiPll.d_pos;     // 正序D轴（SOGI滤波）
-    g_CLA_ClaToCpuDQ0Data.Q_axis = g_sogiPll.q_pos;     // 正序Q轴（SOGI滤波）
-    g_CLA_ClaToCpuDQ0Data.Zero_axis = 0.0f;             // 零轴分量（三相平衡时为0）
+    float sin_theta = SOGI_PLL_get_sin_theta(&g_sogiPll);
+    float cos_theta = SOGI_PLL_get_cos_theta(&g_sogiPll);
+    float pll_locked_flag = (float)SOGI_PLL_is_locked(&g_sogiPll, 0.5f);
+    // 锁定标志同步给电流环以及CPU端做并网判断
 
-    // ========== 传递PLL数据到CPU ==========
+    // ========== 三相电流采样并转换 ==========
+    float ia = g_CLA_CpuToClaAdcData.I_Phase_A;
+    float ib = g_CLA_CpuToClaAdcData.I_Phase_B;
+    float ic = g_CLA_CpuToClaAdcData.I_Phase_C;
+    clarke_amplitude(ia, ib, ic, &currentVec);
+    // 电流经Clarke后移除零序，可直接进入Park变换
+
+    float i_d = 0.0f;
+    float i_q = 0.0f;
+    Park_transform_positive_fast(currentVec.alpha, currentVec.beta,
+                                 cos_theta, sin_theta, &i_d, &i_q);
+    // 得到的i_d/i_q分别调有功与无功，支撑解耦电流环
+
+    float vdc_meas = g_CLA_CpuToClaAdcData.V_DC800_Total;
+    float vdc_error = CLA_VDC_REF_V - vdc_meas;
+    // 电压误差驱动外环，保持母线电压稳定
+
+    g_currentLoopState.voltageLoopIntegral += CLA_VLOOP_KI * CLA_CONTROL_TS * vdc_error; // 母线电压外环
+    // 外环积分器累积误差，并结合后续饱和保护避免积分发散
+    g_currentLoopState.voltageLoopIntegral =
+        saturate_inline(g_currentLoopState.voltageLoopIntegral, -CLA_ID_LIMIT_A, CLA_ID_LIMIT_A);
+
+    float id_amplitude = CLA_VLOOP_KP * vdc_error + g_currentLoopState.voltageLoopIntegral;
+    // 正序电流幅值命令
+    id_amplitude = saturate_inline(id_amplitude, -CLA_ID_LIMIT_A, CLA_ID_LIMIT_A);
+
+    if (pll_locked_flag < 0.5f)
+    // PLL未锁定时清除各积分项，防止误差堆积拉偏直流母线
+    {
+        g_currentLoopState.voltageLoopIntegral = 0.0f; // 防止未锁定时积分漂移
+        g_currentLoopState.idIntegral = 0.0f;
+        g_currentLoopState.iqIntegral = 0.0f;
+        id_amplitude = 0.0f;
+    }
+
+    // 外环输出直接作为d轴电流参考，去掉dq轴归一化
+    float id_ref = id_amplitude;
+    float iq_ref = 0.0f;
+    // PFC默认不送无功功率，因此q轴参考保持为0
+
+    float id_err = id_ref - i_d;
+    g_currentLoopState.idIntegral += CLA_IL_KI * CLA_CONTROL_TS * id_err; // d轴电流环积分
+    // d轴PI积分带限，兼顾快速性与防超调
+    g_currentLoopState.idIntegral =
+        saturate_inline(g_currentLoopState.idIntegral, -CLA_VCMD_LIMIT_V, CLA_VCMD_LIMIT_V);
+    float vd_ctrl = CLA_IL_KP * id_err + g_currentLoopState.idIntegral;
+
+    float iq_err = iq_ref - i_q;
+    g_currentLoopState.iqIntegral += CLA_IL_KI * CLA_CONTROL_TS * iq_err;
+    // q轴积分同样受限，防止PLL短时震荡导致积分累积
+    g_currentLoopState.iqIntegral =
+        saturate_inline(g_currentLoopState.iqIntegral, -CLA_VCMD_LIMIT_V, CLA_VCMD_LIMIT_V);
+    float vq_ctrl = CLA_IL_KP * iq_err + g_currentLoopState.iqIntegral;
+
+    float vd_cmd = vd_ctrl + g_sogiPll.d_pos;
+    float vq_cmd = vq_ctrl + g_sogiPll.q_pos;
+
+    AlphaBeta_Vec voltageCmd;
+    inverse_park(vd_cmd, vq_cmd, cos_theta, sin_theta, &voltageCmd);
+    // 将dq调制电压旋转回αβ坐标，为SVPWM做准备
+
+    float va_cmd, vb_cmd, vc_cmd;
+    inverse_clarke(voltageCmd.alpha, voltageCmd.beta, &va_cmd, &vb_cmd, &vc_cmd);
+    // 再从αβ变换回abc三相，得到每相指令电压
+
+    // ========== SVPWM零序注入 ========== 
+    float vdc_safe = (vdc_meas > CLA_MIN_VDC_FOR_MOD) ? vdc_meas : CLA_MIN_VDC_FOR_MOD;
+    float inv_vdc = 2.0f / vdc_safe;             // 归一化到Vdc/2
+
+    // 归一化相电压
+    float v_a = va_cmd * inv_vdc;
+    // 归一化到[-1,1]区间，方便后续min-max零序注入
+    float v_b = vb_cmd * inv_vdc;
+    float v_c = vc_cmd * inv_vdc;
+
+    // min-max 中点零序注入
+    float v_max = v_a;
+    if (v_b > v_max) v_max = v_b;
+    if (v_c > v_max) v_max = v_c;
+    float v_min = v_a;
+    if (v_b < v_min) v_min = v_b;
+    if (v_c < v_min) v_min = v_c;
+    float v_offset = -0.5f * (v_max + v_min);
+    // min-max注入的零序量，可最大化调制比并抑制饱和
+
+    float v_a_mod = saturate_inline(v_a + v_offset, -1.0f, 1.0f);
+    float v_b_mod = saturate_inline(v_b + v_offset, -1.0f, 1.0f);
+    float v_c_mod = saturate_inline(v_c + v_offset, -1.0f, 1.0f);
+
+    // 线性映射到占空比
+    float duty_a = saturate_inline(0.5f + 0.5f * v_a_mod, CLA_DUTY_MIN, CLA_DUTY_MAX);
+    float duty_b = saturate_inline(0.5f + 0.5f * v_b_mod, CLA_DUTY_MIN, CLA_DUTY_MAX);
+    float duty_c = saturate_inline(0.5f + 0.5f * v_c_mod, CLA_DUTY_MIN, CLA_DUTY_MAX);
+    // 将归一化电压线性映射到占空比，附带上下限保护
+
+    uint16_t cmpA = (uint16_t)(duty_a * (float)PFC_A_TBPRD + 0.5f);
+    uint16_t cmpB = (uint16_t)(duty_b * (float)PFC_B_TBPRD + 0.5f);
+    uint16_t cmpC = (uint16_t)(duty_c * (float)PFC_C_TBPRD + 0.5f);
+
+    EPWM_setCounterCompareValue(PFC_A_BASE, EPWM_COUNTER_COMPARE_A, cmpA);
+    EPWM_setCounterCompareValue(PFC_B_BASE, EPWM_COUNTER_COMPARE_A, cmpB);
+    EPWM_setCounterCompareValue(PFC_C_BASE, EPWM_COUNTER_COMPARE_A, cmpC);
+
+    // ========== 计算结果推送CPU ==========
+    g_CLA_ClaToCpuDQ0Data.D_axis = i_d;
+    g_CLA_ClaToCpuDQ0Data.Q_axis = i_q;
+    g_CLA_ClaToCpuDQ0Data.Zero_axis = id_ref;
+    // Zero轴暂存id参考值，CPU可据此监控功率命令
+
     g_CLA_ClaToCpuPllData.theta = g_sogiPll.theta;
     g_CLA_ClaToCpuPllData.freq = g_sogiPll.freq;
     g_CLA_ClaToCpuPllData.omega = g_sogiPll.omega;
@@ -110,40 +237,19 @@ __attribute__((interrupt)) void Cla1Task1 ( void )
     g_CLA_ClaToCpuPllData.q_pos = g_sogiPll.q_pos;
     g_CLA_ClaToCpuPllData.d_neg = g_sogiPll.d_neg;
     g_CLA_ClaToCpuPllData.q_neg = g_sogiPll.q_neg;
-    g_CLA_ClaToCpuPllData.is_locked = (float)SOGI_PLL_is_locked(&g_sogiPll, 0.5f);
+    g_CLA_ClaToCpuPllData.is_locked = pll_locked_flag;
+    // CPU通过该标志判断PLL同步状态，触发保护或并网逻辑
 
-    // ========== 中断处理 ==========
-    // 清除中断标志
     EPWM_clearEventTriggerInterruptFlag(EPWM1_BASE);
+    // 清除触发标志，等待下一次EPWM比较事件唤醒本任务
 }
 
-/**
- * @brief CLA任务2 - PWM占空比更新
- * @details 功能：
- *          - 根据duty值更新EPWM1的比较值
- *          - 测试模式：占空比从0.1递增到0.9后循环
- * @note 由EPWM4触发，用于PWM波形生成
- * @warning 当前为测试代码，实际应用中应根据控制算法计算占空比
- */
 __attribute__((interrupt))  void Cla1Task2 ( void )
 {
     __mdebugstop();
-    // 更新PWM比较值（占空比控制）
-    EPWM_setCounterCompareValue(EPWM1_BASE, EPWM_COUNTER_COMPARE_A,
-                                (uint16_t)(duty * EPWM1_PERIOD + 0.5f));
-
-    // 测试代码：占空比递增
-    duty += 0.1f;
-    duty = (duty > 0.9f) ? 0.1f : duty;
-
-    // 清除中断标志
+    // PWM占空比由Task1前馈电流环实时更新，此处仅保留中断响应
     EPWM_clearEventTriggerInterruptFlag(EPWM4_BASE);
 }
-
-/**
- * @brief CLA任务3 - 预留
- * @details 当前未使用，预留给未来功能扩展
- */
 __attribute__((interrupt))  void Cla1Task3 ( void )
 {
 }
@@ -190,14 +296,12 @@ __attribute__((interrupt))  void Cla1Task7 ( void )
 __attribute__((interrupt))  void Cla1Task8 ( void )
 {
     // 重置占空比为初始值
-    duty = 0.1f;
-
-    // 重置坐标变换对象（方式1需要，方式2不需要）
-    // ABC_DQ0_POS_reset(&g_abcDq0);
-    // ABC_DQ0_NEG_reset(&g_abcDq0Neg);
+    g_currentLoopState.voltageLoopIntegral = 0.0f;
+    g_currentLoopState.idIntegral = 0.0f;
+    g_currentLoopState.iqIntegral = 0.0f;
 
     // 初始化SOGI-PLL
-    // 参数：采样频率=EPWM1频率=100kHz，额定电网频率=50Hz
+    // 参数：采样频率=EPWM1频率=16kHz，额定电网频率=50Hz
     // 注意：如果电网是60Hz，需要修改第二个参数为60.0f
     SOGI_PLL_init(&g_sogiPll, 16000.0f, 50.0f);
 
