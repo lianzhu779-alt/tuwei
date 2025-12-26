@@ -4,7 +4,8 @@
       "Bash(cat:*)",
       "Bash(make clean:*)",
       "Bash(dir:*)",
-      "Bash(nul)"
+      "Bash(nul)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
