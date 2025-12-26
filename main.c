@@ -5,6 +5,7 @@
 #include "driverlib.h"
 #include "device.h"
 #include "board.h"
+#include "hal.h"
 
 //
 // Function Prototypes
@@ -59,6 +60,9 @@ void main(void)
     // Initialize resources
     //
     Board_init();
+
+    HAL_System_Init();
+
     initCLA();
 
     //

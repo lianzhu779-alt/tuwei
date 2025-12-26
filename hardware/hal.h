@@ -68,4 +68,10 @@ uint32_t HAL_GetTick(void);
  */
 void HAL_Delay(uint32_t ms);
 
+/**
+ * @brief 系统底层初始化
+ * @details 配置CPU Timer0产生1ms中断作为系统Tick
+ */
+void HAL_System_Init(void);
+
 #endif /* HAL_H */
